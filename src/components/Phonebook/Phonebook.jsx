@@ -2,6 +2,10 @@ import React from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Button, ErrMsg, StyledField, StyledForm } from './Phonebook.styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from 'redux/contactsSlice';
+import { getContacts } from 'redux/selectors';
+import Notiflix from 'notiflix';
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
@@ -16,7 +20,9 @@ const SignupSchema = Yup.object().shape({
     ),
 });
 
-export const Phonebook = ({ onAddContact }) => {
+export const Phonebook = () => {
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
   return (
     <Formik
       initialValues={{
@@ -26,7 +32,11 @@ export const Phonebook = ({ onAddContact }) => {
       validationSchema={SignupSchema}
       onSubmit={(values, helpers) => {
         helpers.resetForm();
-        onAddContact(values);
+        if (!contacts.find(item => item.name === values.name)) {
+          dispatch(addContact(values));
+        } else {
+          Notiflix.Notify.info(`${values.name} is already in contacts`);
+        }
       }}
     >
       <StyledForm>
